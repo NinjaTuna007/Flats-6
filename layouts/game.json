@@ -1806,11 +1806,85 @@
         "var dz = 0.15;",
         "function deadzone(v) { v = v || 0; return Math.abs(v) > dz ? v : 0; }",
         "var vars = runtimeScene.getVariables();",
-        "vars.get(\"GamepadConnected\").setBoolean(!!(gp && gp.connected));",
-        "vars.get(\"GamepadLeftX\").setNumber(gp ? deadzone(gp.leftStickX) : 0);",
-        "vars.get(\"GamepadLeftY\").setNumber(gp ? deadzone(gp.leftStickY) : 0);",
-        "vars.get(\"GamepadRightX\").setNumber(gp ? deadzone(gp.rightStickX) : 0);",
-        "vars.get(\"GamepadRightY\").setNumber(gp ? deadzone(gp.rightStickY) : 0);",
+        "",
+        "// --- One-time touch-control setup: track a raw touch on the left half",
+        "// of the screen as a virtual movement stick, and a raw touch on the",
+        "// right half as a look-drag, independent of GDevelop's own touch/mouse",
+        "// instructions (avoids relying on the missing SpriteMultitouchJoystick",
+        "// extension, and mouse-emulation only tracks one pointer at a time).",
+        "if (!window.__flatsTouchInit) {",
+        "  window.__flatsTouchInit = true;",
+        "  window.__flatsMove = { active: false, dx: 0, dy: 0, startX: 0, startY: 0 };",
+        "  window.__flatsLook = { active: false, dx: 0, dy: 0 };",
+        "  window.__flatsMoveId = null;",
+        "  window.__flatsLookId = null;",
+        "  var MOVE_RADIUS = 90;",
+        "  function halfOf(x) { return x < window.innerWidth / 2 ? 'left' : 'right'; }",
+        "  document.addEventListener('touchstart', function (e) {",
+        "    for (var i = 0; i < e.changedTouches.length; i++) {",
+        "      var t = e.changedTouches[i];",
+        "      var half = halfOf(t.clientX);",
+        "      if (half === 'left' && window.__flatsMoveId === null) {",
+        "        window.__flatsMoveId = t.identifier;",
+        "        window.__flatsMove.active = true;",
+        "        window.__flatsMove.startX = t.clientX;",
+        "        window.__flatsMove.startY = t.clientY;",
+        "        window.__flatsMove.dx = 0;",
+        "        window.__flatsMove.dy = 0;",
+        "      } else if (half === 'right' && window.__flatsLookId === null) {",
+        "        window.__flatsLookId = t.identifier;",
+        "        window.__flatsLook.active = true;",
+        "        window.__flatsLook._lastX = t.clientX;",
+        "        window.__flatsLook._lastY = t.clientY;",
+        "      }",
+        "    }",
+        "  }, { passive: true });",
+        "  document.addEventListener('touchmove', function (e) {",
+        "    for (var i = 0; i < e.changedTouches.length; i++) {",
+        "      var t = e.changedTouches[i];",
+        "      if (t.identifier === window.__flatsMoveId) {",
+        "        window.__flatsMove.dx = (t.clientX - window.__flatsMove.startX) / MOVE_RADIUS;",
+        "        window.__flatsMove.dy = (t.clientY - window.__flatsMove.startY) / MOVE_RADIUS;",
+        "      } else if (t.identifier === window.__flatsLookId) {",
+        "        window.__flatsLook.dx = t.clientX - window.__flatsLook._lastX;",
+        "        window.__flatsLook.dy = t.clientY - window.__flatsLook._lastY;",
+        "        window.__flatsLook._lastX = t.clientX;",
+        "        window.__flatsLook._lastY = t.clientY;",
+        "      }",
+        "    }",
+        "  }, { passive: true });",
+        "  function endTouch(e) {",
+        "    for (var i = 0; i < e.changedTouches.length; i++) {",
+        "      var t = e.changedTouches[i];",
+        "      if (t.identifier === window.__flatsMoveId) {",
+        "        window.__flatsMoveId = null;",
+        "        window.__flatsMove.active = false;",
+        "        window.__flatsMove.dx = 0;",
+        "        window.__flatsMove.dy = 0;",
+        "      } else if (t.identifier === window.__flatsLookId) {",
+        "        window.__flatsLookId = null;",
+        "        window.__flatsLook.active = false;",
+        "        window.__flatsLook.dx = 0;",
+        "        window.__flatsLook.dy = 0;",
+        "      }",
+        "    }",
+        "  }",
+        "  document.addEventListener('touchend', endTouch, { passive: true });",
+        "  document.addEventListener('touchcancel', endTouch, { passive: true });",
+        "}",
+        "var touchMoveX = window.__flatsMove.active ? Math.max(-1, Math.min(1, window.__flatsMove.dx)) : 0;",
+        "var touchMoveY = window.__flatsMove.active ? Math.max(-1, Math.min(1, window.__flatsMove.dy)) : 0;",
+        "var touchLookDx = window.__flatsLook.active ? window.__flatsLook.dx : 0;",
+        "var touchLookDy = window.__flatsLook.active ? window.__flatsLook.dy : 0;",
+        "window.__flatsLook.dx = 0;",
+        "window.__flatsLook.dy = 0;",
+        "",
+        "var gamepadActive = !!(gp && gp.connected);",
+        "vars.get(\"GamepadConnected\").setBoolean(gamepadActive || window.__flatsLook.active);",
+        "vars.get(\"GamepadLeftX\").setNumber(gamepadActive ? deadzone(gp.leftStickX) : touchMoveX);",
+        "vars.get(\"GamepadLeftY\").setNumber(gamepadActive ? deadzone(gp.leftStickY) : touchMoveY);",
+        "vars.get(\"GamepadRightX\").setNumber(gamepadActive ? deadzone(gp.rightStickX) : touchLookDx * 0.3);",
+        "vars.get(\"GamepadRightY\").setNumber(gamepadActive ? deadzone(gp.rightStickY) : touchLookDy * 0.3);",
         "vars.get(\"GamepadA\").setBoolean(!!(gp && gp.a));",
         "vars.get(\"GamepadFire\").setNumber(gp ? (gp.rightTrigger > 0.1 ? gp.rightTrigger : (gp.r2 ? 1 : 0)) : 0);"
       ],
@@ -1829,6 +1903,15 @@
         }
       ],
       "actions": [
+        {
+          "type": {
+            "value": "ShowLayer"
+          },
+          "parameters": [
+            "",
+            "\"gui\""
+          ]
+        },
         {
           "type": {
             "value": "PointLights::CreatePointLight"
@@ -1922,6 +2005,19 @@
             "Opacity",
             "=",
             "100"
+          ]
+        },
+        {
+          "type": {
+            "value": "PlayMusicCanal"
+          },
+          "parameters": [
+            "",
+            "assets\\audio\\FlatsBGM1.mp3",
+            "0",
+            "yes",
+            "60",
+            "1"
           ]
         }
       ]
@@ -2818,11 +2914,28 @@
                   "subInstructions": [
                     {
                       "type": {
-                        "value": "MouseButtonPressed"
+                        "value": "BuiltinCommonInstructions::And"
                       },
-                      "parameters": [
-                        "",
-                        "Left"
+                      "parameters": [],
+                      "subInstructions": [
+                        {
+                          "type": {
+                            "value": "MouseButtonPressed"
+                          },
+                          "parameters": [
+                            "",
+                            "Left"
+                          ]
+                        },
+                        {
+                          "type": {
+                            "value": "MousePointerLock::isPointerLocked"
+                          },
+                          "parameters": [
+                            "",
+                            ""
+                          ]
+                        }
                       ]
                     },
                     {
@@ -2833,6 +2946,34 @@
                         "GamepadFire",
                         ">=",
                         "0.5"
+                      ]
+                    },
+                    {
+                      "type": {
+                        "value": "BuiltinCommonInstructions::And"
+                      },
+                      "parameters": [],
+                      "subInstructions": [
+                        {
+                          "type": {
+                            "value": "SourisSurObjet"
+                          },
+                          "parameters": [
+                            "fire",
+                            "",
+                            "",
+                            ""
+                          ]
+                        },
+                        {
+                          "type": {
+                            "value": "MouseButtonPressed"
+                          },
+                          "parameters": [
+                            "",
+                            "Left"
+                          ]
+                        }
                       ]
                     }
                   ]

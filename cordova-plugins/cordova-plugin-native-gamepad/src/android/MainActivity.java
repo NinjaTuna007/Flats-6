@@ -75,7 +75,21 @@ public class MainActivity extends CordovaActivity
         // Set by <content src="index.html" /> in config.xml
         loadUrl(launchUrl);
 
+        // Android WebView blocks audio/video autoplay without a preceding
+        // user gesture by default (same policy as Chrome). GDJS plays
+        // background music as soon as a scene loads, before the player has
+        // touched anything, so without this the game is silent until (if
+        // ever) some other gesture happens to unlock the audio context.
+        allowAudioAutoplay();
+
         startPolling();
+    }
+
+    private void allowAudioAutoplay() {
+        View v = (appView != null) ? appView.getView() : null;
+        if (v instanceof WebView) {
+            ((WebView) v).getSettings().setMediaPlaybackRequiresUserGesture(false);
+        }
     }
 
     private void startPolling() {
