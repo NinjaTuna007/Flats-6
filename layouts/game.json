@@ -22,7 +22,43 @@
     "windowMask": false
   },
   "objectsGroups": [],
-  "variables": [],
+  "variables": [
+    {
+      "name": "GamepadConnected",
+      "value": false,
+      "type": "boolean"
+    },
+    {
+      "name": "GamepadLeftX",
+      "value": 0,
+      "type": "number"
+    },
+    {
+      "name": "GamepadLeftY",
+      "value": 0,
+      "type": "number"
+    },
+    {
+      "name": "GamepadRightX",
+      "value": 0,
+      "type": "number"
+    },
+    {
+      "name": "GamepadRightY",
+      "value": 0,
+      "type": "number"
+    },
+    {
+      "name": "GamepadA",
+      "value": false,
+      "type": "boolean"
+    },
+    {
+      "name": "GamepadFire",
+      "value": 0,
+      "type": "number"
+    }
+  ],
   "instances": [
     {
       "angle": 0,
@@ -1579,6 +1615,23 @@
   },
   "events": [
     {
+      "type": "BuiltinCommonInstructions::JsCode",
+      "inlineCode": [
+        "var gp = (typeof window !== \"undefined\" && window.__nativeGamepad) || null;",
+        "var dz = 0.15;",
+        "function deadzone(v) { v = v || 0; return Math.abs(v) > dz ? v : 0; }",
+        "var vars = runtimeScene.getVariables();",
+        "vars.get(\"GamepadConnected\").setBoolean(!!(gp && gp.connected));",
+        "vars.get(\"GamepadLeftX\").setNumber(gp ? deadzone(gp.leftStickX) : 0);",
+        "vars.get(\"GamepadLeftY\").setNumber(gp ? deadzone(gp.leftStickY) : 0);",
+        "vars.get(\"GamepadRightX\").setNumber(gp ? deadzone(gp.rightStickX) : 0);",
+        "vars.get(\"GamepadRightY\").setNumber(gp ? deadzone(gp.rightStickY) : 0);",
+        "vars.get(\"GamepadA\").setBoolean(!!(gp && gp.a));",
+        "vars.get(\"GamepadFire\").setNumber(gp ? (gp.rightTrigger > 0.1 ? gp.rightTrigger : (gp.r2 ? 1 : 0)) : 0);"
+      ],
+      "parameterObjects": ""
+    },
+    {
       "type": "BuiltinCommonInstructions::Standard",
       "conditions": [
         {
@@ -1742,6 +1795,16 @@
                             "",
                             "Up"
                           ]
+                        },
+                        {
+                          "type": {
+                            "value": "VarScene"
+                          },
+                          "parameters": [
+                            "GamepadLeftY",
+                            "<",
+                            "-0.15"
+                          ]
                         }
                       ]
                     }
@@ -1784,6 +1847,16 @@
                           "parameters": [
                             "",
                             "Left"
+                          ]
+                        },
+                        {
+                          "type": {
+                            "value": "VarScene"
+                          },
+                          "parameters": [
+                            "GamepadLeftX",
+                            "<",
+                            "-0.15"
                           ]
                         }
                       ]
@@ -1828,6 +1901,16 @@
                             "",
                             "Down"
                           ]
+                        },
+                        {
+                          "type": {
+                            "value": "VarScene"
+                          },
+                          "parameters": [
+                            "GamepadLeftY",
+                            ">",
+                            "0.15"
+                          ]
                         }
                       ]
                     }
@@ -1870,6 +1953,16 @@
                           "parameters": [
                             "",
                             "Right"
+                          ]
+                        },
+                        {
+                          "type": {
+                            "value": "VarScene"
+                          },
+                          "parameters": [
+                            "GamepadLeftX",
+                            ">",
+                            "0.15"
                           ]
                         }
                       ]
@@ -2361,11 +2454,28 @@
               "conditions": [
                 {
                   "type": {
-                    "value": "KeyPressed"
+                    "value": "BuiltinCommonInstructions::Or"
                   },
-                  "parameters": [
-                    "",
-                    "Space"
+                  "parameters": [],
+                  "subInstructions": [
+                    {
+                      "type": {
+                        "value": "KeyPressed"
+                      },
+                      "parameters": [
+                        "",
+                        "Space"
+                      ]
+                    },
+                    {
+                      "type": {
+                        "value": "SceneVariableAsBoolean"
+                      },
+                      "parameters": [
+                        "GamepadA",
+                        "True"
+                      ]
+                    }
                   ]
                 },
                 {
@@ -2517,11 +2627,29 @@
               "conditions": [
                 {
                   "type": {
-                    "value": "MouseButtonPressed"
+                    "value": "BuiltinCommonInstructions::Or"
                   },
-                  "parameters": [
-                    "",
-                    "Left"
+                  "parameters": [],
+                  "subInstructions": [
+                    {
+                      "type": {
+                        "value": "MouseButtonPressed"
+                      },
+                      "parameters": [
+                        "",
+                        "Left"
+                      ]
+                    },
+                    {
+                      "type": {
+                        "value": "VarScene"
+                      },
+                      "parameters": [
+                        "GamepadFire",
+                        ">=",
+                        "0.5"
+                      ]
+                    }
                   ]
                 }
               ],
@@ -2997,6 +3125,43 @@
       "type": "BuiltinCommonInstructions::Standard",
       "conditions": [],
       "actions": []
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [
+        {
+          "type": {
+            "value": "SceneVariableAsBoolean"
+          },
+          "parameters": [
+            "GamepadConnected",
+            "True"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "type": {
+            "value": "SetAngle"
+          },
+          "parameters": [
+            "player",
+            "+",
+            "Variable(GamepadRightX) * 3"
+          ]
+        },
+        {
+          "type": {
+            "value": "Scene3D::Base3DBehavior::SetRotationY"
+          },
+          "parameters": [
+            "playerCam",
+            "Object3D",
+            "+",
+            "Variable(GamepadRightY) * 3"
+          ]
+        }
+      ]
     }
   ],
   "layers": [
