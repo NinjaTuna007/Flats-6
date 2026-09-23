@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-plugin-native-gamepad"
+        version="1.0.0">
+    <name>NativeGamepad</name>
+    <description>
+        Reads real Android gamepad HID input (SteelSeries Nimbus Cloud etc.)
+        via android.view.InputDevice and exposes it to JS as
+        window.__nativeGamepad, polled ~60x/sec. Built specifically for the
+        Flats 6 project (package com.flats.mtsyntho) since GDJS has no
+        built-in gamepad support and Android WebView's coverage of the
+        browser Gamepad API is unreliable.
+    </description>
+    <license>Apache-2.0</license>
+
+    <js-module src="www/nativegamepad.js" name="NativeGamepad">
+        <clobbers target="NativeGamepad" />
+    </js-module>
+
+    <platform name="android">
+        <!-- Overwrites the generated MainActivity.java with a version that
+             overrides dispatchGenericMotionEvent/dispatchKeyEvent to
+             capture gamepad input at the Activity level (the only place
+             analog stick/trigger motion is actually delivered) and push it
+             into the WebView via evaluateJavascript.
+
+             This has to be a hook rather than a plain <source-file>: the
+             android platform template creates its own stock MainActivity.java
+             during `platform add`, and pending plugins (including this one)
+             get restored into the platform *after* that template is laid
+             down, so <source-file> hits an "already exists" error. The hook
+             just copies our file over top, unconditionally, every prepare. -->
+        <hook type="after_prepare" src="scripts/after_prepare.js" />
+    </platform>
+</plugin>

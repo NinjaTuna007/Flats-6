@@ -1,0 +1,11 @@
+{
+  "name": "cordova-plugin-native-gamepad",
+  "version": "1.0.0",
+  "description": "Reads real Android gamepad HID input (SteelSeries Nimbus Cloud etc.) via android.view.InputDevice and exposes it to JS as window.__nativeGamepad. Built for the Flats 6 project since GDJS has no built-in gamepad support.",
+  "cordova": {
+    "id": "cordova-plugin-native-gamepad",
+    "platforms": ["android"]
+  },
+  "keywords": ["cordova", "gamepad", "android", "ecosystem:cordova"],
+  "license": "Apache-2.0"
+}

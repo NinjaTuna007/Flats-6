@@ -102,11 +102,35 @@ log "Exporting GDevelop project (headless GDCore) -> Cordova project..."
   --out "$EXPORT_DIR" \
   --build cordova)
 
-# --- 6. Add the Android platform (idempotent) and build -------------------
+# --- 6. Add our local plugins (native gamepad bridge, etc.) --------------
 CORDOVA="$BUILD_DIR/tools/node_modules/.bin/cordova"
+for plugin_dir in "$ROOT"/cordova-plugins/*/; do
+  [[ -f "$plugin_dir/plugin.xml" ]] || continue
+  plugin_id="$(basename "$plugin_dir")"
+  log "Adding local plugin: $plugin_id"
+  (cd "$EXPORT_DIR" && "$CORDOVA" plugin add "$plugin_dir" --nofetch)
+done
+
+# --- 7. Add the Android platform (idempotent) and build -------------------
 if [[ ! -d "$EXPORT_DIR/platforms/android" ]]; then
   log "Adding Cordova Android platform..."
   (cd "$EXPORT_DIR" && "$CORDOVA" platform add android)
+else
+  # Platform already existed (e.g. re-run) -- make sure newly-added plugins
+  # actually get installed into it.
+  (cd "$EXPORT_DIR" && "$CORDOVA" prepare android)
+fi
+
+# --- 7b. Sanity-check: confirm local plugin source files actually landed
+# in the generated Android project. cordova can silently no-op a
+# <source-file> replacement (e.g. wrong target-dir), so fail loudly instead
+# of shipping a build that's missing the feature.
+GAMEPAD_MAIN_ACTIVITY="$EXPORT_DIR/platforms/android/app/src/main/java/com/flats/mtsyntho/MainActivity.java"
+if [[ -d "$ROOT/cordova-plugins/cordova-plugin-native-gamepad" ]]; then
+  if ! grep -q "dispatchGenericMotionEvent" "$GAMEPAD_MAIN_ACTIVITY" 2>/dev/null; then
+    echo "cordova-plugin-native-gamepad did not apply: $GAMEPAD_MAIN_ACTIVITY is still the stock MainActivity." >&2
+    exit 1
+  fi
 fi
 
 log "Building debug APK (Gradle, first run is slow — bootstraps its own wrapper)..."
