@@ -72,6 +72,11 @@
       "name": "GameOver",
       "value": false,
       "type": "boolean"
+    },
+    {
+      "name": "TimeWobble",
+      "value": 0,
+      "type": "number"
     }
   ],
   "instances": [
@@ -1820,9 +1825,11 @@
         "  window.__flatsLookId = null;",
         "  var MOVE_RADIUS = 90;",
         "  function halfOf(x) { return x < window.innerWidth / 2 ? 'left' : 'right'; }",
+        "  function inButtonCluster(x, y) { return (x / window.innerWidth) > 0.60 && (y / window.innerHeight) > 0.40; }",
         "  document.addEventListener('touchstart', function (e) {",
         "    for (var i = 0; i < e.changedTouches.length; i++) {",
         "      var t = e.changedTouches[i];",
+        "      if (inButtonCluster(t.clientX, t.clientY)) { continue; }",
         "      var half = halfOf(t.clientX);",
         "      if (half === 'left' && window.__flatsMoveId === null) {",
         "        window.__flatsMoveId = t.identifier;",
@@ -1886,7 +1893,8 @@
         "vars.get(\"GamepadRightX\").setNumber(gamepadActive ? deadzone(gp.rightStickX) : touchLookDx * 0.3);",
         "vars.get(\"GamepadRightY\").setNumber(gamepadActive ? deadzone(gp.rightStickY) : touchLookDy * 0.3);",
         "vars.get(\"GamepadA\").setBoolean(!!(gp && gp.a));",
-        "vars.get(\"GamepadFire\").setNumber(gp ? (gp.rightTrigger > 0.1 ? gp.rightTrigger : (gp.r2 ? 1 : 0)) : 0);"
+        "vars.get(\"GamepadFire\").setNumber(gp ? (gp.rightTrigger > 0.1 ? gp.rightTrigger : (gp.r2 ? 1 : 0)) : 0);",
+        "vars.get(\"TimeWobble\").setNumber(Math.sin(performance.now() / 180) * 8);"
       ],
       "parameterObjects": ""
     },
@@ -2756,6 +2764,34 @@
                         "GamepadA",
                         "True"
                       ]
+                    },
+                    {
+                      "type": {
+                        "value": "BuiltinCommonInstructions::And"
+                      },
+                      "parameters": [],
+                      "subInstructions": [
+                        {
+                          "type": {
+                            "value": "SourisSurObjet"
+                          },
+                          "parameters": [
+                            "zoom",
+                            "",
+                            "",
+                            ""
+                          ]
+                        },
+                        {
+                          "type": {
+                            "value": "MouseButtonPressed"
+                          },
+                          "parameters": [
+                            "",
+                            "Left"
+                          ]
+                        }
+                      ]
                     }
                   ]
                 },
@@ -3618,7 +3654,7 @@
             "enemy",
             "Object3D",
             "=",
-            "player.Object3D::Z()"
+            "player.Object3D::Z() + Variable(TimeWobble)"
           ]
         }
       ]
@@ -3704,6 +3740,17 @@
       "conditions": [
         {
           "type": {
+            "value": "RepeatEveryXSeconds::Repeat"
+          },
+          "parameters": [
+            "player",
+            "\"enemyDamageTick\"",
+            "1",
+            ""
+          ]
+        },
+        {
+          "type": {
             "value": "CollisionNP"
           },
           "parameters": [
@@ -3711,17 +3758,6 @@
             "enemy",
             "",
             "",
-            ""
-          ]
-        },
-        {
-          "type": {
-            "value": "RepeatEveryXSeconds::Repeat"
-          },
-          "parameters": [
-            "player",
-            "\"enemyDamageTick\"",
-            "1",
             ""
           ]
         },
