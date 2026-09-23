@@ -57,6 +57,21 @@
       "name": "GamepadFire",
       "value": 0,
       "type": "number"
+    },
+    {
+      "name": "PlayerHealth",
+      "value": 100,
+      "type": "number"
+    },
+    {
+      "name": "Score",
+      "value": 0,
+      "type": "number"
+    },
+    {
+      "name": "GameOver",
+      "value": false,
+      "type": "boolean"
     }
   ],
   "instances": [
@@ -333,6 +348,60 @@
       "y": 461,
       "z": 1000,
       "zOrder": 13,
+      "numberProperties": [],
+      "stringProperties": [],
+      "initialVariables": []
+    },
+    {
+      "angle": 0,
+      "customSize": true,
+      "depth": 0,
+      "height": 50,
+      "layer": "gui",
+      "locked": false,
+      "name": "healthText",
+      "persistentUuid": "gamepad-survival-healthText",
+      "sealed": false,
+      "width": 400,
+      "x": 30,
+      "y": 100,
+      "zOrder": 100,
+      "numberProperties": [],
+      "stringProperties": [],
+      "initialVariables": []
+    },
+    {
+      "angle": 0,
+      "customSize": true,
+      "depth": 0,
+      "height": 50,
+      "layer": "gui",
+      "locked": false,
+      "name": "scoreText",
+      "persistentUuid": "gamepad-survival-scoreText",
+      "sealed": false,
+      "width": 400,
+      "x": 1500,
+      "y": 54,
+      "zOrder": 100,
+      "numberProperties": [],
+      "stringProperties": [],
+      "initialVariables": []
+    },
+    {
+      "angle": 0,
+      "customSize": true,
+      "depth": 0,
+      "height": 100,
+      "layer": "gui",
+      "locked": false,
+      "name": "gameOverText",
+      "persistentUuid": "gamepad-survival-gameOverText",
+      "sealed": false,
+      "width": 700,
+      "x": 600,
+      "y": 420,
+      "zOrder": 100,
       "numberProperties": [],
       "stringProperties": [],
       "initialVariables": []
@@ -1515,6 +1584,122 @@
         "bottomFaceResourceRepeat": false,
         "materialType": "StandardWithoutMetalness"
       }
+    },
+    {
+      "assetStoreId": "",
+      "name": "enemy",
+      "type": "Scene3D::Model3DObject",
+      "variables": [
+        {
+          "name": "Health",
+          "value": 40,
+          "type": "number"
+        }
+      ],
+      "effects": [],
+      "behaviors": [],
+      "content": {
+        "centerLocation": "ModelOrigin",
+        "depth": 100,
+        "height": 100,
+        "keepAspectRatio": true,
+        "materialType": "StandardWithoutMetalness",
+        "modelResourceName": "assets\\models\\Flatman_LOD0.glb",
+        "originLocation": "ModelOrigin",
+        "rotationX": 0,
+        "rotationY": 0,
+        "rotationZ": 90,
+        "width": 100,
+        "animations": []
+      }
+    },
+    {
+      "assetStoreId": "",
+      "name": "bullet",
+      "type": "Scene3D::Cube3DObject",
+      "variables": [],
+      "effects": [],
+      "behaviors": [],
+      "content": {
+        "width": 15,
+        "height": 15,
+        "depth": 15,
+        "enableTextureTransparency": false,
+        "facesOrientation": "Y",
+        "frontFaceResourceName": "assets\\placeholder\\white.png",
+        "backFaceResourceName": "assets\\placeholder\\white.png",
+        "backFaceUpThroughWhichAxisRotation": "X",
+        "leftFaceResourceName": "assets\\placeholder\\white.png",
+        "rightFaceResourceName": "assets\\placeholder\\white.png",
+        "topFaceResourceName": "assets\\placeholder\\white.png",
+        "bottomFaceResourceName": "assets\\placeholder\\white.png",
+        "leftFaceUpThroughWhichAxisRotation": "X",
+        "rightFaceUpThroughWhichAxisRotation": "X",
+        "topFaceUpThroughWhichAxisRotation": "X",
+        "bottomFaceUpThroughWhichAxisRotation": "X",
+        "faceVisibility": {
+          "front": true,
+          "back": true,
+          "top": true,
+          "bottom": true,
+          "left": true,
+          "right": true
+        }
+      }
+    },
+    {
+      "assetStoreId": "",
+      "name": "healthText",
+      "type": "BBText::BBText",
+      "variables": [],
+      "effects": [],
+      "behaviors": [],
+      "content": {
+        "text": "HP: 100",
+        "opacity": 100,
+        "fontSize": 34,
+        "visible": true,
+        "color": "255;255;255",
+        "fontFamily": "assets\\fonts\\Casper.ttf",
+        "align": "left",
+        "wordWrap": true
+      }
+    },
+    {
+      "assetStoreId": "",
+      "name": "scoreText",
+      "type": "BBText::BBText",
+      "variables": [],
+      "effects": [],
+      "behaviors": [],
+      "content": {
+        "text": "Score: 0",
+        "opacity": 100,
+        "fontSize": 34,
+        "visible": true,
+        "color": "255;255;255",
+        "fontFamily": "assets\\fonts\\Casper.ttf",
+        "align": "right",
+        "wordWrap": true
+      }
+    },
+    {
+      "assetStoreId": "",
+      "name": "gameOverText",
+      "type": "BBText::BBText",
+      "variables": [],
+      "effects": [],
+      "behaviors": [],
+      "content": {
+        "text": "Game Over",
+        "opacity": 0,
+        "fontSize": 60,
+        "visible": true,
+        "color": "230;60;60",
+        "fontFamily": "assets\\fonts\\Casper.ttf",
+        "align": "center",
+        "wordWrap": true
+      }
     }
   ],
   "objectsFolderStructure": {
@@ -2656,13 +2841,31 @@
               "actions": [
                 {
                   "type": {
-                    "value": "FireBullet::FireBullet::Fire"
+                    "value": "Create"
                   },
                   "parameters": [
-                    "player",
-                    "FireBullet",
+                    "",
+                    "bullet",
                     "player.CenterX()",
                     "player.CenterY()",
+                    "\"\""
+                  ]
+                },
+                {
+                  "type": {
+                    "value": "SetAngle"
+                  },
+                  "parameters": [
+                    "bullet",
+                    "=",
+                    "player.Angle()"
+                  ]
+                },
+                {
+                  "type": {
+                    "value": "AddForceAL"
+                  },
+                  "parameters": [
                     "bullet",
                     "player.Angle()",
                     "1000",
@@ -2799,6 +3002,34 @@
                 ""
               ]
             },
+            {
+              "type": {
+                "value": "Delete"
+              },
+              "parameters": [
+                "bullet",
+                ""
+              ]
+            }
+          ]
+        },
+        {
+          "type": "BuiltinCommonInstructions::Standard",
+          "conditions": [
+            {
+              "type": {
+                "value": "CollisionNP"
+              },
+              "parameters": [
+                "bullet",
+                "collision",
+                "",
+                "",
+                ""
+              ]
+            }
+          ],
+          "actions": [
             {
               "type": {
                 "value": "Delete"
@@ -3159,6 +3390,392 @@
             "Object3D",
             "+",
             "Variable(GamepadRightY) * 3"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [
+        {
+          "type": {
+            "value": "RepeatEveryXSeconds::Repeat"
+          },
+          "parameters": [
+            "player",
+            "\"enemySpawn\"",
+            "4",
+            ""
+          ]
+        },
+        {
+          "type": {
+            "value": "SceneVariableAsBoolean"
+          },
+          "parameters": [
+            "GameOver",
+            "False"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "type": {
+            "value": "Create"
+          },
+          "parameters": [
+            "",
+            "enemy",
+            "player.X() + RandomInRange(-900, 900)",
+            "player.Y() + RandomInRange(-900, 900)",
+            "\"\""
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [
+        {
+          "type": {
+            "value": "SceneVariableAsBoolean"
+          },
+          "parameters": [
+            "GameOver",
+            "False"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "type": {
+            "value": "AddForceVersPos"
+          },
+          "parameters": [
+            "enemy",
+            "player.X()",
+            "player.Y()",
+            "150",
+            ""
+          ]
+        },
+        {
+          "type": {
+            "value": "SetAngle"
+          },
+          "parameters": [
+            "enemy",
+            "=",
+            "AngleBetweenPositions(enemy.X(), enemy.Y(), player.X(), player.Y())"
+          ]
+        },
+        {
+          "type": {
+            "value": "Scene3D::Base3DBehavior::SetZ"
+          },
+          "parameters": [
+            "enemy",
+            "Object3D",
+            "=",
+            "player.Object3D::Z()"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [
+        {
+          "type": {
+            "value": "CollisionNP"
+          },
+          "parameters": [
+            "bullet",
+            "enemy",
+            "",
+            "",
+            ""
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "type": {
+            "value": "ModVarObjet"
+          },
+          "parameters": [
+            "enemy",
+            "Health",
+            "-",
+            "25"
+          ]
+        },
+        {
+          "type": {
+            "value": "Delete"
+          },
+          "parameters": [
+            "bullet",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [
+        {
+          "type": {
+            "value": "VarObjet"
+          },
+          "parameters": [
+            "enemy",
+            "Health",
+            "<=",
+            "0"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "type": {
+            "value": "Delete"
+          },
+          "parameters": [
+            "enemy",
+            ""
+          ]
+        },
+        {
+          "type": {
+            "value": "ModVarScene"
+          },
+          "parameters": [
+            "Score",
+            "+",
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [
+        {
+          "type": {
+            "value": "CollisionNP"
+          },
+          "parameters": [
+            "player",
+            "enemy",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "type": {
+            "value": "RepeatEveryXSeconds::Repeat"
+          },
+          "parameters": [
+            "player",
+            "\"enemyDamageTick\"",
+            "1",
+            ""
+          ]
+        },
+        {
+          "type": {
+            "value": "SceneVariableAsBoolean"
+          },
+          "parameters": [
+            "GameOver",
+            "False"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "type": {
+            "value": "ModVarScene"
+          },
+          "parameters": [
+            "PlayerHealth",
+            "-",
+            "10"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [],
+      "actions": [
+        {
+          "type": {
+            "value": "BBText::SetBBText"
+          },
+          "parameters": [
+            "healthText",
+            "=",
+            "\"HP: \" + ToString(Variable(PlayerHealth))"
+          ]
+        },
+        {
+          "type": {
+            "value": "BBText::SetBBText"
+          },
+          "parameters": [
+            "scoreText",
+            "=",
+            "\"Score: \" + ToString(Variable(Score))"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [
+        {
+          "type": {
+            "value": "VarScene"
+          },
+          "parameters": [
+            "PlayerHealth",
+            "<=",
+            "0"
+          ]
+        },
+        {
+          "type": {
+            "value": "SceneVariableAsBoolean"
+          },
+          "parameters": [
+            "GameOver",
+            "False"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "type": {
+            "value": "SetSceneVariableAsBoolean"
+          },
+          "parameters": [
+            "GameOver",
+            "True"
+          ]
+        },
+        {
+          "type": {
+            "value": "OpacityCapability::OpacityBehavior::SetValue"
+          },
+          "parameters": [
+            "gameOverText",
+            "Opacity",
+            "=",
+            "100"
+          ]
+        },
+        {
+          "type": {
+            "value": "BBText::SetBBText"
+          },
+          "parameters": [
+            "gameOverText",
+            "=",
+            "\"Game Over! Score: \" + ToString(Variable(Score)) + \" -- Press A or R to restart\""
+          ]
+        }
+      ]
+    },
+    {
+      "type": "BuiltinCommonInstructions::Standard",
+      "conditions": [
+        {
+          "type": {
+            "value": "SceneVariableAsBoolean"
+          },
+          "parameters": [
+            "GameOver",
+            "True"
+          ]
+        },
+        {
+          "type": {
+            "value": "BuiltinCommonInstructions::Or"
+          },
+          "parameters": [],
+          "subInstructions": [
+            {
+              "type": {
+                "value": "KeyPressed"
+              },
+              "parameters": [
+                "",
+                "r"
+              ]
+            },
+            {
+              "type": {
+                "value": "SceneVariableAsBoolean"
+              },
+              "parameters": [
+                "GamepadA",
+                "True"
+              ]
+            }
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "type": {
+            "value": "SetSceneVariableAsBoolean"
+          },
+          "parameters": [
+            "GameOver",
+            "False"
+          ]
+        },
+        {
+          "type": {
+            "value": "ModVarScene"
+          },
+          "parameters": [
+            "PlayerHealth",
+            "=",
+            "100"
+          ]
+        },
+        {
+          "type": {
+            "value": "ModVarScene"
+          },
+          "parameters": [
+            "Score",
+            "=",
+            "0"
+          ]
+        },
+        {
+          "type": {
+            "value": "Delete"
+          },
+          "parameters": [
+            "enemy",
+            ""
+          ]
+        },
+        {
+          "type": {
+            "value": "OpacityCapability::OpacityBehavior::SetValue"
+          },
+          "parameters": [
+            "gameOverText",
+            "Opacity",
+            "=",
+            "0"
           ]
         }
       ]
